@@ -14,14 +14,28 @@
      *board-size*
      19)
 
+(def #^{:doc "The square of the board size - usually 361, but can be rebound using with-board-size."}
+     *squared-board-size*
+     361)
+
 (defmacro with-board-size
   "Evaluates the body with a dynamically rebound board size."
   [size & body]
-  `(binding [*board-size* ~size]
-     ~@body))
+  `(let [size# ~size]
+     (binding [*board-size* size#
+               *squared-board-size* (* size# size#)]       
+       ~@body)))
 
-(defn mirror-coord [x]
+(defn coord?
+  "Tests if something is a legal (one-based) board coordinate, i.e. between 1 and *board-size*"
+  [c]
+  (and (number? c)
+       (<= 1 c *board-size*)))
+
+(defn mirror-coord
   "Mirrors a given coord."
+  [x]
+  {:pre [(coord? x)]}
   (- (inc *board-size*) x))
 
 (defn handicap-coords
@@ -33,8 +47,9 @@
         19 [4 10 16]
            []))
 
-(defn point-on-board?
-  "Tests if a point is on the board."
-  [point]
-  (every? #(<= 1 % *board-size*) point))
-
+(defn point?
+  "Tests if something is a legal board point, i.e. a vector of two coords"
+  [p]
+  (and (vector? p)
+       (= (count p) 2)       
+       (every? coord? p)))

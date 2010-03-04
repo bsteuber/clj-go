@@ -2,14 +2,16 @@
   (:use clj-go
         clj-go.board
         :reload-all)
-  (:use [clojure.test]))
+  (:use clojure.test))
 
-(def bd (make-board))
+(def bd19 (make-board))
 
 (deftest empty-board
-  (is (board-empty? bd))
-  (is (= (* 19 19) (count bd)))
+  (is (board? bd19))
+  (is (board-empty? bd19))
+  (is (= (* 19 19) (count bd19)))
   (with-board-size 3
+    (is (not (board? bd19)))  ; 19x19 boards are no longer boards with other sizes
     (is (= 9 (count (make-board))))))
 
 (deftest vertex-point-conversion
