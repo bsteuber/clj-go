@@ -4,7 +4,7 @@
 (defn make-board
   "Creates an empty Go board."
   []
-  (vec (repeat *squared-board-size*)))
+  (vec (repeat *squared-board-size* :empty)))
 
 (defn board?
   "Checks if something is a board."
@@ -20,7 +20,7 @@
 (defn to-vertex
   "Converts a point (or vertex) to a vertex."
   [p]
-  {:pre [(or (coord? p)
+  {:pre [(or (vertex? p)
              (point? p))]}  
   (if (vector? p)
     (+ (* (dec (second p)) *board-size*)
@@ -30,7 +30,7 @@
 (defn to-point
   "Converts a vertex (or point) to a point." 
   [v]
-  {:pre [(or (coord? v)
+  {:pre [(or (vertex? v)
              (point? v))]}  
   (if (vector? v)
     v            
