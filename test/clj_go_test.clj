@@ -29,3 +29,14 @@
   (with-board-size 6
     (is (point? [6 6]))
     (is (not (point? [6 7])))))
+
+(deftest neighbourhood
+  (is (= (neighbours [1 1])
+         #{[1 2] [2 1]}))
+  (is (= (neighbours [19 18])
+         #{[19 19] [19 17] [18 18]}))  
+  (is (= (neighbours [10 10])
+         #{[11 10] [9 10] [10 11] [10 9]}))
+  (with-board-size 10
+    (is (= (neighbours [10 10])
+         #{[10 9] [9 10]}))))

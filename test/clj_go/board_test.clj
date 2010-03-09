@@ -4,59 +4,37 @@
         :reload-all)
   (:use clojure.test))
 
-(def bd19 (make-board))
+(deftest adding-stones
+  (let [b1 (add-stone empty-board :black [1 1])
+        b2 (add-stone b1 :black [1 2])
+        b3 (add-stone b2 :white [2 2])
+        b4 (add-stone b3 :black [5 5])
+        c1 [:black #{[1 1]}]
+        c2 [:black #{[1 1] [1 2]}]        
+        c3 [:white #{[2 2]}]                
+        c4 [:black #{[5 5]}]]    
+    (is (= b1 {[1 1] c1}))
+    (is (= b2 {[1 1] c2, [1 2] c2}))
+    (is (= b3 {[1 1] c2, [1 2] c2, [2 2] c3}))
+    (is (= b4 {[1 1] c2, [1 2] c2, [2 2] c3, [5 5] c4}))))
 
-(deftest empty-board
-  (is (board? bd19))
-  (is (board-empty? bd19))
-  (is (= (* 19 19) (count bd19)))
-  (with-board-size 3
-    (is (not (board? bd19)))  ; 19x19 boards are no longer boards with other sizes
-    (is (= 9 (count (make-board))))))
+(deftest capture
+  (let [b (setup-board
+            {:blacks [[1 1]]
+             :whites [[1 2] [2 1]]})]
+    (is (chain-captured? b (b [1 1])))
+    (is (not (chain-captured? b (b [1 2])))))
+  (let [b (setup-board
+            {:blacks [[1 5]]
+             :whites [[1 4] [1 6] [2 5]]})]
+    (is (chain-captured? b (b [1 5])))
+    (is (not (chain-captured? b (b [1 4])))))
+  (let [b (setup-board
+            {:whites [[4 4]]
+             :blacks [[3 4] [5 4] [4 3] [4 5]]})]
+    (is (chain-captured? b (b [4 4])))
+    (is (not (chain-captured? b (b [3 4]))))))
 
-(deftest vertex-point-conversion
-  (is (= (to-vertex 0) 0)) 
-  (is (= (to-vertex [1 1]) 0))
-  (is (= (to-vertex [2 1]) 1))
-  (is (= (to-vertex [19 1]) 18))
-  (is (= (to-vertex [1 2]) 19))
-  (is (= (to-vertex [19 19]) 360))
-
-  (is (= (to-point [1 1]) [1 1]))
-  (is (= (to-point 0) [1 1]))
-  (is (= (to-point 1) [2 1]))
-  (is (= (to-point 18) [19 1]))
-  (is (= (to-point 19) [1 2])))
-
-(deftest board-update
-  (letfn [(test-update
-           [vertex color]
-           (= (-> (make-board)
-                  (update-vertex vertex color)
-                  (vertex-color vertex))
-              color))]
-    (with-board-size 9      
-      (is (test-update [1 1] :black))
-      (is (test-update 3 :black))
-      (is (test-update [9 1] :white))
-      (is (test-update 80 :white)))))
-
-(deftest board-updates
-  (letfn [(test-updates
-           [vertices color]
-           (let [b (update-vertices (make-board)
-                                    vertices
-                                    color)]
-             (every? #{color}
-                     (map #(vertex-color b %) vertices))))]
-    (with-board-size 17      
-      (is (test-updates [[1 1] [17 17]] :black))
-      (is (test-updates [0 (dec (* 17 17))] :black))
-      (is (test-updates [[2 1] 53] :white))
-      (is (test-updates [[1 2] 85] :white)))))
-
-(deftest stone-lists
-  (letfn [(test-stone-lists
-           [blacks whites]
-           
-           )]))
+(deftest moves
+  ; TODO
+  nil)

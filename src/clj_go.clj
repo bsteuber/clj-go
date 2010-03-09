@@ -1,7 +1,7 @@
 (ns clj-go)
 
-(def player-colors [:black :white])
-(def board-colors (conj player-colors :empty))
+(def players [:black :white])
+(def colors (conj players :empty))
 
 (defn other-player
   "Gives the other player's color."
@@ -10,33 +10,28 @@
         :white :black
         :black :white))
 
-(def #^{:doc "The board size - usually 19, but can be rebound using with-board-size."}
-     *board-size*
-     19)
-
-(def #^{:doc "The square of the board size - usually 361, but can be rebound using with-board-size."}
-     *squared-board-size*
-     361)
+(def
+ #^{:doc "The board size - usually 19, but can be rebound using with-board-size."}
+ *board-size*
+ 19)
 
 (defmacro with-board-size
   "Evaluates the body with a dynamically rebound board size."
   [size & body]
-  `(let [size# ~size]
-     (binding [*board-size* size#
-               *squared-board-size* (* size# size#)]       
-       ~@body)))
+  `(binding [*board-size* ~size]       
+     ~@body))
 
 (defn coord?
   "Tests if something is a legal (one-based) board coordinate, i.e. between 1 and *board-size*"
-  [c]
-  (and (number? c)
-       (<= 1 c *board-size*)))
+  [coord]
+  (and (number? coord)
+       (<= 1 coord *board-size*)))
 
 (defn mirror-coord
   "Mirrors a given coord."
-  [x]
-  {:pre [(coord? x)]}
-  (- (inc *board-size*) x))
+  [coord]
+  {:pre [(coord? coord)]}
+  (- (inc *board-size*) coord))
 
 (defn handicap-coords
   "The (one-based) coords of all handicap stone positions."
@@ -49,7 +44,19 @@
 
 (defn point?
   "Tests if something is a legal board point, i.e. a vector of two coords"
-  [p]
-  (and (vector? p)
-       (= (count p) 2)       
-       (every? coord? p)))
+  [point]
+  (and (vector? point)
+       (= (count point) 2)       
+       (every? coord? point)))
+
+(def #^{:doc "The four directions left, right, up and down"}
+ directions
+ [[-1 0] [1 0] [0 -1] [0 1]])
+
+(defn neighbours
+  "The set of all (on-board) neighbours of a given point"
+  [point]
+  (into #{}
+        (filter point?
+                (map #(vec (map + point %))
+                     directions))))
