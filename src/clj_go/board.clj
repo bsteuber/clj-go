@@ -51,7 +51,7 @@
                                      #{point}
                                      (map chain-stones
                                           same-color-chains)))]
-    (apply assoc board (interleave (chain-stones new-chain) (repeat new-chain)))))
+    (into board (zipmap (chain-stones new-chain) (repeat new-chain)))))
 
 (defn setup-board
   "Creates a board with all given black and white stones on it."
