@@ -1,7 +1,8 @@
 (ns clj-go)
 
-(def players [:black :white])
-(def colors (conj players :empty))
+(def #^{:doc "The two player colors black and white"}
+     players
+     [:black :white])
 
 (defn other-player
   "Gives the other player's color."
