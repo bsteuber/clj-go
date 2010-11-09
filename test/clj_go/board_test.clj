@@ -1,40 +1,21 @@
 (ns clj-go.board-test
   (:use clj-go
         clj-go.board
-        :reload-all)
+        :reload)
   (:use clojure.test))
 
-(deftest putting-stones
-  (let [b1 (put-stone empty-board :black [1 1])
-        b2 (put-stone b1 :black [1 2])
-        b3 (put-stone b2 :white [2 2])
-        b4 (put-stone b3 :black [5 5])
-        c1 [:black #{[1 1]}]
-        c2 [:black #{[1 1] [1 2]}]
-        c3 [:white #{[2 2]}]
-        c4 [:black #{[5 5]}]]
-    (is (= b1 {[1 1] c1}))
-    (is (= b2 {[1 1] c2, [1 2] c2}))
-    (is (= b3 {[1 1] c2, [1 2] c2, [2 2] c3}))
-    (is (= b4 {[1 1] c2, [1 2] c2, [2 2] c3, [5 5] c4}))))
+(def s1 "...
+         .x.
+         .oo")
 
-(deftest capture
-  (let [b (setup-board
-            {:blacks [[1 1]]
-             :whites [[1 2] [2 1]]})]
-    (is (chain-captured? b (b [1 1])))
-    (is (not (chain-captured? b (b [1 2])))))
-  (let [b (setup-board
-            {:blacks [[1 5]]
-             :whites [[1 4] [1 6] [2 5]]})]
-    (is (chain-captured? b (b [1 5])))
-    (is (not (chain-captured? b (b [1 4])))))
-  (let [b (setup-board
-            {:whites [[4 4] [4 5]]
-             :blacks [[3 4] [5 4] [4 3] [3 5] [5 5] [4 6]]})]
-    (is (chain-captured? b (b [4 4])))
-    (is (chain-captured? b (b [4 5])))
-    (is (not (chain-captured? b (b [3 4]))))))
+(def b1 (-> (board 3)
+              (put :black [2 2])
+              (put :white [2 3] [3 3])))
 
-(deftest moves
-  nil)
+(deftest readb
+  (is (= (read-board s1)
+         b1))
+  (is (= (strip-spaces s1)
+         (print-board b1))))
+
+
