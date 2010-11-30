@@ -1,19 +1,25 @@
 (ns clj-go)
 
-(def players [:black :white])
+(def colors (sorted-set :black :white))
 
-(def player? (set players))
-
-(defn other-player [color]
-  (case color
-        :white :black
-        :black :white
-        color))
+(def other-color {:black :white
+                  :white :black})
 
 (defn coords [size]
   (range 1 (inc size)))
 
-(defn vertices [size]
-  (for [x (coords size)
-        y (coords size)]    
-    [x y]))
+(def points
+     (memoize (fn [size]
+                (apply sorted-set
+                       (for [x (coords size)
+                             y (coords size)]    
+                         [x y])))))
+
+(def neighbours
+     (memoize (fn [size [x y]]
+                (set
+                 (filter (points size)
+                         [[(dec x) y]
+                          [(inc x) y]
+                          [x (dec y)]
+                          [x (inc y)]])))))
