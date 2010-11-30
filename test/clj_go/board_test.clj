@@ -13,11 +13,11 @@
               (put :black [2 2])
               (put :white [2 3] [3 3])))
 
-(deftest readb
+(deftest readb0
   (is (= (read-board s1)
          b1))
-  (is (like s1
-            (format-board b1))))
+  (is (= (read-board (format-board b1))
+         b1)))
 
 
 (deftest neighbs
