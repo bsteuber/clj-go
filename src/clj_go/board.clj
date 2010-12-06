@@ -1,13 +1,6 @@
 (ns clj-go.board
-  (:use clj-go)
+  (:use clj-go.core)
   (:require [clojure.string :as str]))
-
-(defrecord ^{:doc "A squared go board of a give size"}
-  Board
-  [sz]
-  clojure.lang.IFn
-  (invoke [b pt]
-          (get b pt)))
 
 (defn put
   "A board with stones added at points. For removing stones, use dissoc."
@@ -16,8 +9,17 @@
          (zipmap points
                  (repeat color))))
 
+(defn make-board
+  "Creates a go board of a given size.
+  Can be given lists of initial black and white stones."
+  [size & {:keys [black white]}]
+  (let [put-fn #(apply put %1 %2 %3)]
+    (-> {:size size}
+        (put-fn :black black)
+        (put-fn :white white))))
+
 (defn- neighb-fn [board]
-  #(neighbours (:sz board) %))
+  #(neighbours (:size board) %))
 
 (defn- of-col?-fn [board color]
   #(= (board %) color))
@@ -25,17 +27,21 @@
 (defn chain
   "The set of all points connected to the chain at point"
   [board point]
-  (let [color (board point)]
-    (loop [current [point]
+  (let [color (board point)
+        neighbs (neighb-fn board)
+        right-color? (of-col?-fn board color)]
+    (loop [current #{point}
            chain #{}
            visited #{}]
       (if (empty? current)
         chain        
-        (recur (remove visited
-                       (mapcat (neighb-fn board) current))
-               (into chain
-                     (filter (of-col?-fn board color)
-                             current))
+        (recur (->> current
+                    (mapcat neighbs)
+                    (remove visited)
+                    set)
+               (->> current
+                    (filter right-color?)
+                    (into chain))
                (into visited current))))))
 
 (defn liberties
@@ -60,14 +66,14 @@
   Doesn't check for ko rule."
   [board color point]
   (let [opp (other-color color)
-        sz (:sz board)
+        size (:size board)
         new-board (put board color point)
         opp-neighbs (filter (of-col?-fn board opp)
-                            (neighbours sz point))
+                            (neighbours size point))
         captured-neighbs (filter #(captured? new-board %) opp-neighbs)
         suicide? (and (empty? captured-neighbs)
                       (captured? new-board point))]
-    (if (and ((points sz) point)
+    (if (and ((points size) point)
              (not (board point))
              (not suicide?))
       (apply dissoc new-board (mapcat #(chain board %)
@@ -88,7 +94,7 @@
                   (str/replace " " "")
                   str/split-lines)        
         size (count lines)]
-    (into (Board. size)
+    (into (make-board size)
           (filter second
                   (for [[x y :as p] (points size)]
                     [p (char->col (nth (nth lines (dec y))
@@ -96,12 +102,9 @@
 
 (defn format-board
   "Formats a board to a string like \n...\n.xo\n.o."
-  [{sz :sz :as board}]
+  [{size :size :as board}]
   (str "\n"
-       (str/join "\n" (for [y (coords sz)]
-                             (str/join (for [x (coords sz)]
+       (str/join "\n" (for [y (coords size)]
+                             (str/join (for [x (coords size)]
                                          (col->char (board [x y]))))))
        "\n"))
-
-(defmethod print-method Board [bd writer]
-           (binding [*out* writer] (print (format-board bd))))

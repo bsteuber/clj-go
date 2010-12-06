@@ -1,43 +1,56 @@
 (ns clj-go.board-test
-  (:use clj-go
-        clj-go.board
+  (:use (clj-go core board)        
         :reload)
-  (:import (clj-go.board Board))
-  (:use clojure.test))
+  (:use [lazytest.describe :only [describe testing it]])) 
 
 (def s1 "...
          .x.
          .oo")
 
-(def b1 (-> (Board. 3)
-              (put :black [2 2])
-              (put :white [2 3] [3 3])))
+(def s2 "...
+         .xx
+         .oo")
 
-(deftest readb0
-  (is (= (read-board s1)
-         b1))
-  (is (= (read-board (format-board b1))
-         b1)))
+(def s3 "...
+         .xx
+         x..")
 
+(def b1 (make-board 3
+          :black [[2 2]]
+          :white [[2 3] [3 3]]))
 
-(deftest neighbs
-  (is (= (liberties b1 [2 3])
-         (liberties b1 [3 3])
-         #{[1 3] [3 2]})))
+(describe "reading"
+  (it "from string"
+    (= b1 (read-board s1)))
+  (it "from printed board"
+    (= b1 (read-board (format-board b1)))))
 
-(deftest capture
-  (is (captured? (put b1 :black [3 2] [1 3])
-                 [3 3]))
-  (is (captured? (put b1 :white [1 2] [2 1] [3 2])
-                 [2 2])))
+(describe "liberties"
+  (it "should work"
+    (= (liberties b1 [2 3])
+       (liberties b1 [3 3])
+       #{[1 3] [3 2]}))) 
 
-(deftest playing
-  (let [b2 (play b1 :black [3 2])
-        b3 (play b2 :black [1 3])]
-    (is (= b2 (read-board "...
-                           .xx
-                           .oo")))
+(describe "capture"    
+  (it "single stones"
+    (captured? (read-board ".o.
+                              oxo
+                              .oo")
+               [2 2]))
+  (it "chains"
+    (captured? (read-board "...
+                              .xx
+                              xoo")
+               [3 3])))
 
-    (is (= b3 (read-board "...
-                           .xx
-                           x..")))))
+(describe "play moves"
+    (it "without capture"
+      (= (play b1 :black [3 2])
+         (read-board "...
+                      .xx
+                      .oo")))
+    (it "with capture"
+      (= (play (read-board s2) :black [1 3])
+         (read-board "...
+                      .xx
+                      x.."))))

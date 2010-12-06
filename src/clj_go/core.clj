@@ -1,6 +1,6 @@
-(ns clj-go)
+(ns clj-go.core)
 
-(def colors (sorted-set :black :white))
+(def colors #{:black :white})
 
 (def other-color {:black :white
                   :white :black})
@@ -23,3 +23,8 @@
                           [(inc x) y]
                           [x (dec y)]
                           [x (inc y)]])))))
+
+(defn surrounding [size points]
+  (->> points
+       (mapcat #(neighbours size %))  
+       distinct))
