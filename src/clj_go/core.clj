@@ -1,7 +1,5 @@
 (ns clj-go.core)
 
-(def colors #{:black :white})
-
 (def other-color {:black :white
                   :white :black})
 
@@ -26,5 +24,6 @@
 
 (defn surrounding [size points]
   (->> points
-       (mapcat #(neighbours size %))  
+       (mapcat #(neighbours size %))
+       (remove (apply hash-set points))
        distinct))

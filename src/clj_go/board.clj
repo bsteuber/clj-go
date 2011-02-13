@@ -18,10 +18,12 @@
         (put-fn :black black)
         (put-fn :white white))))
 
-(defn- neighb-fn [board]
+(def board-points (comp points :size))
+
+(defn neighb-fn [board]
   #(neighbours (:size board) %))
 
-(defn- of-col?-fn [board color]
+(defn of-col?-fn [board color]
   #(= (board %) color))
 
 (defn chain
@@ -34,15 +36,16 @@
            chain #{}
            visited #{}]
       (if (empty? current)
-        chain        
-        (recur (->> current
-                    (mapcat neighbs)
-                    (remove visited)
-                    set)
-               (->> current
-                    (filter right-color?)
-                    (into chain))
-               (into visited current))))))
+        chain
+        (let [current-with-right-color (filter right-color?
+                                               current)]
+          (recur (->> current-with-right-color
+                      (mapcat neighbs)
+                      (remove visited)
+                      set)
+                 (->> current-with-right-color
+                      (into chain))
+                 (into visited current)))))))
 
 (defn liberties
   "The set of liberties of the chain at point"
@@ -57,6 +60,16 @@
   [board point]
   (empty? (liberties board point)))
 
+(defn one-element? [seq]
+  (if (counted? seq)
+    (= (count seq) 1)
+    (and (first seq)
+         (not (next seq)))))
+
+(defn atari?
+  [board point]
+  (one-element? (liberties board point)))
+
 (defn play
   "The position after a move at point.
   Nil is returned when
@@ -65,19 +78,36 @@
     - move is illegal.
   Doesn't check for ko rule."
   [board color point]
-  (let [opp (other-color color)
-        size (:size board)
-        new-board (put board color point)
-        opp-neighbs (filter (of-col?-fn board opp)
-                            (neighbours size point))
+  (let [opp              (other-color color)
+        size             (:size board)
+        new-board        (put board color point)
+        opp-neighbs      (filter (of-col?-fn board opp)
+                                 (neighbours size point))
         captured-neighbs (filter #(captured? new-board %) opp-neighbs)
-        suicide? (and (empty? captured-neighbs)
-                      (captured? new-board point))]
-    (if (and ((points size) point)
-             (not (board point))
-             (not suicide?))
+        suicide?         (and (empty? captured-neighbs)
+                              (captured? new-board point))
+        ko               (when (one-element? captured-neighbs)
+                           (let [captured-chain
+                                 (chain board
+                                        (first captured-neighbs))]
+                             (when (one-element? captured-chain)
+                               (first captured-chain))))
+        new-board        (if ko
+                           (assoc new-board :ko ko)
+                           (dissoc new-board :ko))]
+    (when (and ((points size) point)
+               (not (board point))
+               (not (and ko
+                         (= (:ko board)
+                            point)))
+               (not suicide?))
       (apply dissoc new-board (mapcat #(chain board %)
                                       captured-neighbs)))))
+
+(defn legal-moves [board color]
+  (->> (board-points board)
+       (remove board)
+       (filter #(play board color %))))
 
 (def char->col {\x :black
                 \o :white})
@@ -92,7 +122,7 @@
   (let [lines (-> s
                   str/trim
                   (str/replace " " "")
-                  str/split-lines)        
+                  str/split-lines)
         size (count lines)]
     (into (make-board size)
           (filter second
