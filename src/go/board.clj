@@ -71,12 +71,12 @@
   (one-element? (liberties board point)))
 
 (defn play
-  "The position after a move at point.
+  "Gives the board after a move at point.
   Nil is returned when
     - point is not on board
     - point is occupied
     - move is illegal.
-  Doesn't check for ko rule."
+  Checks for simple ko rule."
   [board color point]
   (let [opp              (other-color color)
         size             (:size board)
