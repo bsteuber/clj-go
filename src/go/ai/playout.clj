@@ -1,5 +1,5 @@
-(ns clj-go.ai.playout
-  (:use (clj-go core
+(ns go.ai.playout
+  (:use (go core
                 board)))
 
 (def default-komi 6.5)

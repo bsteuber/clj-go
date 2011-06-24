@@ -1,6 +1,6 @@
-(ns clj-go.ai.mcts
-  (:use (clj-go board)
-        (clj-go.ai playout
+(ns go.ai.mcts
+  (:use (go board)
+        (go.ai playout
                    transpositions)))
 
 (def variant-tree (atom nil))

@@ -1,4 +1,4 @@
-(ns clj-go.core)
+(ns go.core)
 
 (def other-color {:black :white
                   :white :black})

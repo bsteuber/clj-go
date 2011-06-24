@@ -1,5 +1,5 @@
-(ns clj-go.ladder
-  (:use (clj-go core board)))
+(ns go.ladder
+  (:use (go core board)))
 
 (declare ladder-captured?)
 

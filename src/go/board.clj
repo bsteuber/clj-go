@@ -1,5 +1,5 @@
-(ns clj-go.board
-  (:use clj-go.core)
+(ns go.board
+  (:use go.core)
   (:require [clojure.string :as str]))
 
 (defn put

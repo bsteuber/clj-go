@@ -1,4 +1,4 @@
-(ns clj-go.ai.hash)
+(ns go.ai.hash)
 
 (def hash-table
   (atom nil))
