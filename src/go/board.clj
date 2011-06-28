@@ -20,6 +20,9 @@
 
 (def board-points (comp points :size))
 
+(defn board-stones [board]
+  (filter vector? (keys board)))
+
 (defn neighb-fn [board]
   #(neighbours (:size board) %))
 
